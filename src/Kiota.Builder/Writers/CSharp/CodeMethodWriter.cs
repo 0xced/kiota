@@ -105,9 +105,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
     {
         var rawUrlParameter = codeElement.Parameters.OfKind(CodeParameterKind.RawUrl) ?? throw new InvalidOperationException("RawUrlBuilder method should have a RawUrl parameter");
         var requestAdapterProperty = parentClass.GetPropertyOfKind(CodePropertyKind.RequestAdapter) ?? throw new InvalidOperationException("RawUrlBuilder method should have a RequestAdapter property");
-
-        var fullName = parentClass.GetFullName();
-        writer.WriteLine($"return new {fullName}({rawUrlParameter.Name.ToFirstCharacterLowerCase()}, {requestAdapterProperty.Name.ToFirstCharacterUpperCase()});");
+        writer.WriteLine($"return new {parentClass.Name.ToFirstCharacterUpperCase()}({rawUrlParameter.Name.ToFirstCharacterLowerCase()}, {requestAdapterProperty.Name.ToFirstCharacterUpperCase()});");
     }
     private static readonly CodePropertyTypeComparer CodePropertyTypeForwardComparer = new();
     private static readonly CodePropertyTypeComparer CodePropertyTypeBackwardComparer = new(true);
@@ -119,13 +117,13 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
         {
             writer.WriteLine($"\"{mappedType.Key}\" => new {conventions.GetTypeString(mappedType.Value.AllTypes.First(), codeElement)}(),");
         }
-        writer.WriteLine($"_ => new {parentClass.GetFullName()}(),");
+        writer.WriteLine($"_ => new {parentClass.Name.ToFirstCharacterUpperCase()}(),");
         writer.CloseBlock("};");
     }
     private const string ResultVarName = "result";
     private void WriteFactoryMethodBodyForUnionModel(CodeMethod codeElement, CodeClass parentClass, CodeParameter parseNodeParameter, LanguageWriter writer)
     {
-        writer.WriteLine($"var {ResultVarName} = new {parentClass.GetFullName()}();");
+        writer.WriteLine($"var {ResultVarName} = new {parentClass.Name.ToFirstCharacterUpperCase()}();");
         var includeElse = false;
         foreach (var property in parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .OrderBy(static x => x, CodePropertyTypeForwardComparer)
@@ -152,7 +150,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
     }
     private void WriteFactoryMethodBodyForIntersectionModel(CodeMethod codeElement, CodeClass parentClass, CodeParameter parseNodeParameter, LanguageWriter writer)
     {
-        writer.WriteLine($"var {ResultVarName} = new {parentClass.GetFullName()}();");
+        writer.WriteLine($"var {ResultVarName} = new {parentClass.Name.ToFirstCharacterUpperCase()}();");
         var includeElse = false;
         foreach (var property in parentClass.GetPropertiesOfKind(CodePropertyKind.Custom)
                                             .Where(static x => x.Type is not CodeType propertyType || propertyType.IsCollection || propertyType.TypeDefinition is not CodeClass)
@@ -204,7 +202,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
         else if (parentClass.DiscriminatorInformation.ShouldWriteDiscriminatorForIntersectionType)
             WriteFactoryMethodBodyForIntersectionModel(codeElement, parentClass, parseNodeParameter, writer);
         else
-            writer.WriteLine($"return new {parentClass.GetFullName()}();");
+            writer.WriteLine($"return new {parentClass.Name.ToFirstCharacterUpperCase()}();");
     }
     private void WriteRequestBuilderBody(CodeClass parentClass, CodeMethod codeElement, LanguageWriter writer)
     {
@@ -359,7 +357,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
                     return $"GetCollectionOfObjectValues<{propertyType}>({propertyType}.CreateFromDiscriminatorValue){collectionMethod}";
             }
             else if (currentType.TypeDefinition is CodeEnum enumType)
-                return $"GetEnumValue<{enumType.GetFullName()}>()";
+                return $"GetEnumValue<{enumType.Name.ToFirstCharacterUpperCase()}>()";
         }
         return propertyType switch
         {
@@ -664,7 +662,7 @@ public class CodeMethodWriter : BaseElementWriter<CodeMethod, CSharpConventionSe
                 else
                     return $"WriteCollectionOfObjectValues<{propertyType}>";
             else if (currentType.TypeDefinition is CodeEnum enumType)
-                return $"WriteEnumValue<{enumType.GetFullName()}>";
+                return $"WriteEnumValue<{enumType.Name.ToFirstCharacterUpperCase()}>";
 
         }
         return propertyType switch
