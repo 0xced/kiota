@@ -172,6 +172,8 @@ public class CSharpRefiner : CommonLanguageRefiner, ILanguageRefiner
             "System.Threading.Tasks", "Task"),
         new (static x => x is CodeClass @class && @class.IsOfKind(CodeClassKind.Model, CodeClassKind.RequestBuilder),
             "System.Linq", "Enumerable"),
+        new (static x => x is CodeClass @class && @class.IsOfKind(CodeClassKind.Model),
+            "System.Text.Json.Serialization", "JsonPropertyName"),
         new (static x => x is CodeMethod method && method.IsOfKind(CodeMethodKind.ClientConstructor) &&
                     method.Parameters.Any(y => y.IsOfKind(CodeParameterKind.BackingStore)),
             StoreNamespaceName,  "IBackingStoreFactory", "IBackingStoreFactorySingleton"),

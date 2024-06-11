@@ -17,6 +17,16 @@ public class CodePropertyWriter : BaseElementWriter<CodeProperty, CSharpConventi
                                             CodePropertyKind.Custom,
                                             CodePropertyKind.QueryParameter);// Other property types are appropriately constructor initialized
         conventions.WriteShortDescription(codeElement, writer);
+        if (codeElement.Parent is CodeClass { Kind: CodeClassKind.Model })
+        {
+            var jsonAttribute = codeElement.Kind switch
+            {
+                CodePropertyKind.AdditionalData => "[JsonExtensionData]",
+                CodePropertyKind.Custom => $"[JsonPropertyName(\"{codeElement.WireName}\")]",
+                _ => "[JsonIgnore]",
+            };
+            writer.WriteLine(jsonAttribute);
+        }
         conventions.WriteDeprecationAttribute(codeElement, writer);
         WritePropertyInternal(codeElement, writer, isNullableReferenceType ? $"{propertyType}?" : propertyType);
     }
